@@ -1,0 +1,204 @@
+/*** EkaBOT COSECHADORA con placa bq ZUM-BT 328
+  Programacion realizada por Juan Feligreras para crea tu robot cosechadora.
+  Funcionamiento: https://www.youtube.com/watch?v=7iD_3aNgQFE
+  Mas info: juanfeligreras85@gmail.com ***/
+
+
+/***---------------------------------------------------------------------------------------
+                                     LIBRERIAS
+  ---------------------------------------------------------------------------------------***/
+#include <Servo.h>        //Libreria para el servo
+#include <BitbloqUS.h>    //Libreria para el ultrasonidos
+
+
+
+/***---------------------------------------------------------------------------------------
+                                      COMPONENTES
+  ---------------------------------------------------------------------------------------***/
+int zumbador = 2;             //Conectamos un zumbador al pin 2
+int led_2 = 7;                //Conectamos el un LED llamado led_2 al pin 7
+int led_1 = 6;                //Conectamos el un LED llamado led_1 al pin 6
+int ir_drch = 3;              //Conectamos un Sensor IR llamado ir_drch al pin 3
+int ir_izq = 1;               //Conectamos un Sensor IR llamado ir_izq al pin 1
+int sensor_luz = A1;          //Conectamos un Sensor LDR llamado sensor_luz al pin A1
+
+// Servos
+Servo izq;                    //Creamos el servo izq para la rueda izquierda
+Servo drch;                   //Creamos el servo drch para la rueda derecha
+Servo ARRIBA;                 //Creamos el servo ARRIBA para el movimiendo del servo superior de la camara
+Servo ABAJO;                  //Creamos el servo ABAJO para el movimiendo del servo inferior de la camara
+Servo cabeza;                 //Creamos el servo cabeza para el movimiendo del servo de la cabeza
+
+int pinServoizq = 9;          //Establecemos el pin 9 como salida del servo izquierdo
+int pinServodrch = 10;        //Establecemos el pin 10 como salida del servo derecho
+int pinServoARRIBA = 12;      //Establecemos el pin 12 como salida del servo superior de la camara
+int pinServoABAJO = 13;       //Establecemos el pin 13 como salida del servo inferior de la camara
+int pinServocabeza = 11;      //Establecemos el pin 11 como salida del servo sde la cabeza
+
+
+// Ultrasonidos
+int pinTRIgger = 4;                  // Conectamos el PIN de Trigger del US al pin 4
+int pinEcho = 5;                     // Conectamos el PIN de Echo del US al pin 5
+US ultrasonidos (pinTRIgger, pinEcho);      // Pines para el sensor US
+
+/***---------------------------------------------------------------------------------------
+                                     VARIABLES GLOBALES
+  ---------------------------------------------------------------------------------------***/
+//Inicializamos a 0 las 3 variables.
+int uno = 0;        //Esta variable la utilizaremos para hacer parpadear los LED al ritmo de la musica
+int IR_drch = 0;    //Variable para detectar 0 o 1 en nuestro IR
+int IR_izq = 0;    //Variable para detectar 0 o 1 en nuestro IR
+
+
+/***---------------------------------------------------------------------------------------
+                                      FUNCIONES
+  ---------------------------------------------------------------------------------------***/
+
+//Funcion para que los servos de nuestra camara hagan el movimiento de rastreo
+void mover_cabeza() {
+  ABAJO.write(120);
+  delay(350);
+  ABAJO.write(170);
+  delay(350);
+  ABAJO.write(120);
+  delay(350);
+  ABAJO.write(70);
+  delay(350);
+  ARRIBA.write(150);
+  delay(350);
+  ARRIBA.write(100);
+  delay(350);
+  ARRIBA.write(50);
+  delay(350);
+  ARRIBA.write(100);
+  delay(350);
+  ABAJO.write(120);
+  delay(350);
+  ABAJO.write(170);
+  delay(350);
+  ARRIBA.write(150);
+  delay(350);
+  ARRIBA.write(50);
+  delay(350);
+  ARRIBA.write(100);
+  delay(350);
+  ARRIBA.write(150);
+  delay(350);
+}
+
+//Funcion para mover el LED al ritmo de la musica
+void led_ritmo() {
+  if (uno == 1) {                 //Si la variable uno es igual a 1, entonces...
+    digitalWrite(led_2, HIGH);    //Encendemos el led_2
+    digitalWrite(led_1, LOW);     //Apagamos el led_1
+    uno = 2;                      //La variable uno es igual a 2
+  }
+
+  else if (uno == 2) {            //En cambio si la variable uno es igual a 2, entonces...
+    digitalWrite(led_2, LOW);     //Apagamos el led2
+    digitalWrite(led_1, HIGH);    //Encendemos el led_1
+    uno = 1;                      //La variable uno es igual a 1
+  }
+}
+
+/***---------------------------------------------------------------------------------------
+          SETUP (INSTRUCCIONES INICIALES CADA VEZ QUE REINICIAMOS A ZOWI
+  ---------------------------------------------------------------------------------------***/
+
+void setup() {
+  izq.attach(pinServoizq);                //Atribuye el pin al servo izquierdo
+  drch.attach(pinServodrch);              //Atribuye el pin al servo derecho
+  ARRIBA.attach(pinServoARRIBA);          //Atribuye el pin al servo ARRIBA
+  ABAJO.attach(pinServoABAJO);            //Atribuye el pin al servo ABAJO
+  cabeza.attach(pinServocabeza);          //Atribuye el pin al servo cabeza
+  pinMode(led_2, OUTPUT);                 //Nuestro led_2 es una salida
+  pinMode(led_1, OUTPUT);                 //Nuestro led_1 es una salida
+  pinMode(ir_drch, INPUT);                //Nuestro ir_drch es una entrada
+  pinMode(ir_izq, INPUT);                 //Nuestro ir_izq es una entrada
+  pinMode(sensor_luz, INPUT);             //Nuestro sensor_luz es una entrada
+  cabeza.write(70);                       //Ponemos el servo de la cabeza a 70º para que inicialice en esa posicion
+}
+
+/***---------------------------------------------------------------------------------------
+                                BUCLE
+  ---------------------------------------------------------------------------------------***/
+
+void loop() {
+  if (analogRead(sensor_luz) > 50) {                //Si la lectura del sensor de luz es mayor a 50
+    if (ultrasonidos.read() < 40) {                 //Si la lectura del ultrasonidos es menor a 40
+      izq.write(0);                                 //Giramos el servo izq en sentido anti-horario
+      drch.write(180);                              //Giramos el servo izq en sentido horario
+      delay(100);                                   //Esperamos 100ms
+
+    } else {                                        //De lo contrario...
+      drch.write(0);                                //Giramos el servo derecho en sentido anti-horario
+      izq.write(90);                                //Paramos el servo izquierdo
+    }
+
+    IR_drch = digitalRead(ir_drch);                 //IR_drch es igual a la lectura del ir_drch
+    IR_izq = digitalRead(ir_izq);                   //IR_izq es igual a la lectura del ir_izq
+
+    if (IR_drch == 0 || IR_izq == 0) {              //Si IR_drch es igual a 0  o Ir_izq es igual a 0
+      izq.write(180);                               //Giramos el servo izquierdo en sentido horario
+      drch.write(0);                                //Giramos el servo derecho en sentido anti-horario
+      delay(1000);                                  //Esperamos 1000ms
+    }
+
+  } else {                                          //De lo contario...
+    delay(1000);                                    //Esperamos 1000ms
+    izq.write(90);                                  //Paramos el servo izquierdo
+    drch.write(90);                                 //Paramos el servo derecho
+    mover_cabeza();                                 //Ejecutamos la funcion mover cabeza
+    uno = 2;                                        //Nuestra variable uno es igual a 2
+    led_ritmo();                                    //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 261, 2000);                      //Hacemos sonar el zumbador con la nota DO durante 2000ms
+    led_ritmo();                                    //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 293, 200);                      //Hacemos sonar el zumbador con la nota RE durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 329, 200);                      //Hacemos sonar el zumbador con la nota MI durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 349, 200);                      //Hacemos sonar el zumbador con la nota FA durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 261, 200);                      //Hacemos sonar el zumbador con la nota DO durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 293, 200);                      //Hacemos sonar el zumbador con la nota RE durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 329, 200);                      //Hacemos sonar el zumbador con la nota MI durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 349, 200);                      //Hacemos sonar el zumbador con la nota FA durante 200ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 261, 200);                      //Hacemos sonar el zumbador con la nota DO durante 2000ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 293, 200);                      //Hacemos sonar el zumbador con la nota RE durante 2000ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 329, 200);                      //Hacemos sonar el zumbador con la nota MI durante 2000ms
+    led_ritmo();                                   //Ejecutamos la funcion led_ritmo
+    tone(zumbador, 329, 200);                      //Hacemos sonar el zumbador con la nota MI durante 2000ms
+    digitalWrite(led_2, LOW);                      //Apagamos el led_2
+    digitalWrite(led_1, LOW);                      //Apagamos el led_1
+    izq.write(0);                                  //Giramos el servo izquierdo en sentido anti-horario
+    drch.write(180);                               //Giramos el servo derecho en sentido horario
+    delay(1000);                                   //Esperamos 1000ms
+    izq.write(90);                                 //Paramos el servo izquierdo
+    drch.write(90);                                //Paramos el servo derecho
+    delay(100);                                    //Esperamos 100ms
+    izq.write(180);                                //Giramos el servo izquierdo en sentido horario
+    drch.write(0);                                 //Giramos el servo derecho en sentido anti-horario
+    delay(1000);                                   //Esperamos 1000ms
+    izq.write(90);                                 //Paramos el servo izquierdo
+    drch.write(90);                                //Paramos el servo derecho
+    delay(500);                                    //Esperamos 500ms
+    cabeza.write(170);                             //Giramos el servo de la cabeza a 170º
+    delay(500);                                    //Esperamos 500ms
+    cabeza.write(10);                              //Giramos el servo de la cabeza a 10º
+    delay(500);                                    //Esperamos 500ms
+    cabeza.write(170);                             //Giramos el servo de la cabeza a 170º
+    delay(500);                                    //Esperamos 500ms
+    cabeza.write(70);                              //Giramos el servo de la cabeza a 70º
+    delay(1000);                                   //Esperamos 1000ms
+  }
+  
+  while (analogRead(sensor_luz) < 50) {           //Mientras la lectura del sensor de luz sea menor a 50
+    delay(analogRead(sensor_luz) > 50);           //Esperar a que la lectura del sensor de luz sea mayor a 50
+  }
+}
