@@ -1,0 +1,187 @@
+/*** EkaBOT ESQUIVA OBSTACULOS (mejorando codigo).
+  Programacion realizada por Juan Feligreras para actividad esquiva obstaculos.
+  Funcionamiento: https://www.youtube.com/watch?v=S2ZLy0yqLTg
+  Montaje: https://www.youtube.com/watch?v=Q_5DqbdTE_M
+  Mas info: juanfeligreras85@gmail.com ***/
+
+
+/*** <<<<<<<<<<<<<<<<<<<<<<<<<<<PROGRAMACION PLACA 1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>***/
+
+
+/***---------------------------------------------------------------------------------------
+                                     LIBRERIAS
+  ---------------------------------------------------------------------------------------***/
+#include <Servo.h>        //Libreria para el servo
+#include <BitbloqUS.h>    //Libreria para el ultrasonidos
+
+
+
+/***---------------------------------------------------------------------------------------
+                                      COMPONENTES
+  ---------------------------------------------------------------------------------------***/
+// Zumbador
+int zumbador = 2; //Conectamos un zumador al pin 2
+
+// Ultrasonidos
+int pinTRIgger = 4;                  // Conectamos el PIN de Trigger del US al pin 4
+int pinEcho = 5;                     // Conectamos el PIN de Echo del US al pin 5
+US ultra (pinTRIgger, pinEcho);      // Pines para el sensor US
+
+// Servos
+Servo DRCH;       //Creamos el servo para la ruda derecha
+Servo IZQ;        //Creamos el servo para la ruda izquierda
+Servo cabeza;     //Creamos el servo para la mover el US de la cabeza
+
+int pinServoDRCH = 10;    //Establecemos el pin 10 como salida del servo derecho
+int pinServoIZQ = 9;      //Establecemos el pin 9 como salida del servo izquierdo
+int pinServocabeza = 11;  //Establecemos el pin 11 como salida del servo para la cabeza
+
+
+/***---------------------------------------------------------------------------------------
+                                      FUNCIONES
+  ---------------------------------------------------------------------------------------***/
+
+
+void RASTREAR(String ZONA) {                      //Creamos la funcion RASTREAR con el argumento de una variable de texto que llamamos ZONA
+
+  //Vamos a programar que sucede en el caso de que ejecutemos cada zona. Tendremos las zonas llamadas derecha, centro e izquierda.
+
+  if (ZONA == "DERECHA") {              // Si la variable zona es igual a derecha, entonces:
+    tone(zumbador, 261, 250);           // Hacemos sonar el zumbador durante 250ms con la nota DO
+    delay(250);                         // Esperamos 250ms
+    cabeza.write(140);                  // Movemos el servo de la cabeza a 140º
+
+    while (ultra.read() < 30) {         // Mientras la lectura de ulta (ultrasonidos) sea menor que 30cm, entonces:
+      tone(zumbador, 494, 250);         // Hacemos sonar el zumbador durante 250ms con la nota SI
+      delay(250);                       // Esperamos 250ms
+      DRCH.write(90);                   // Paramos el servo derecho
+      IZQ.write(180);                   // Giramos el servo izquierdo en sentido horario
+      delay(200);                       // Esperamos 200ms
+      DRCH.write(90);                   // Paramos el servo derecho
+      IZQ.write(90);                    // Paramos el servo izquierdo
+      delay(200);                       // Esperamos 200ms
+    }
+
+  } else if (ZONA == "CENTRO") {        // En cambio, si nuestra variable de texto es centro, entonces:
+    tone(zumbador, 329, 250);           // Hacemos sonar el zumbador durante 250ms con la nota MI
+    delay(250);                         // Esperamos 250ms
+    cabeza.write(70);                   // Movemos el servo de la cabeza a 70º
+
+    while (ultra.read() < 30) {         // Mientras la lectura de ulta (ultrasonidos) sea menor que 30cm, entonces:
+      tone(zumbador, 494, 250);         // Hacemos sonar el zumbador durante 250ms con la nota SI
+      delay(250);                       // Esperamos 250ms
+      IZQ.write(180);                   // Giramos el servo izquierdo en sentido horario
+      DRCH.write(0);                    // Giramos el servo derecho en sentido anti horario
+      delay(200);                       // Esperamos 200ms
+      DRCH.write(90);                   // Paramos el servo derecho
+      IZQ.write(90);                    // Paramos el servo izquierdo
+      delay(100);                       // Esperamos 100ms
+      IZQ.write(180);                   // Giramos el servo izquierdo en sentido horario
+      delay(1000);                      // Esperamos 1000ms
+      IZQ.write(90);                    // Paramos el servo izquierdo
+    }
+
+  } else if (ZONA == "IZQUIERDA") {    // En cambio, si nuestra variable de texto es izquierda, entonces:
+    tone(zumbador, 440, 250);          // Hacemos sonar el zumbador durante 250ms con la nota LA
+    delay(250);                        // Esperamos 250ms
+    cabeza.write(40);                  // Movemos el servo de la cabeza a 40º
+
+    while (ultra.read() < 30) {        // Mientras la lectura de ulta (ultrasonidos) sea menor que 30cm, entonces:
+      tone(zumbador, 494, 250);        // Hacemos sonar el zumbador durante 250ms con la nota SI
+      delay(250);                      // Esperamos 250ms
+      IZQ.write(90);                   // Paramos el servo izquierdo
+      DRCH.write(0);                   // Giramos el servo derecho en sentido anti horario
+      delay(200);                      // Esperamos 200ms
+      IZQ.write(90);                   // Paramos el servo izquierdo
+      delay(200);                      // Esperamos 200ms
+    }
+  }
+}
+
+
+/***---------------------------------------------------------------------------------------
+          SETUP (INSTRUCCIONES INICIALES CADA VEZ QUE REINICIAMOS A ZOWI
+  ---------------------------------------------------------------------------------------***/
+void setup() {
+  DRCH.attach(pinServoDRCH);        //Atribuye el pin al servo derecho
+  IZQ.attach(pinServoIZQ);          //Atribuye el pin al servo izquierdo
+  cabeza.attach(pinServocabeza);
+
+  /***---------------------------------------------------------------------------------------
+         Instrucciones iniciales que realizara ZOWI cada vez que reinicie o inicialice
+    ---------------------------------------------------------------------------------------***/
+
+
+  delay(200);                      // Esperamos 200ms
+  DRCH.write(180);                 // Giramos el servo derecho en sentido  horario
+  IZQ.write(180);                  // Giramos el servo izquierdo en sentido  horario
+  delay(400);                      // Esperamos 400ms
+  DRCH.write(0);
+  IZQ.write(0);
+  delay(400);                      // Esperamos 400ms
+  DRCH.write(180);
+  IZQ.write(180);
+  delay(400);                      // Esperamos 400ms
+  DRCH.write(0);
+  IZQ.write(0);
+  delay(400);                      // Esperamos 400ms
+  DRCH.write(90);
+  IZQ.write(90);
+
+  //Melodia
+  tone(zumbador, 261, 100);        // El zumbador suena en la nota DO durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 293, 100);        // El zumbador suena en la nota RE durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 329, 100);        // El zumbador suena en la nota MI durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 261, 100);        // El zumbador suena en la nota DO durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 293, 100);        // El zumbador suena en la nota RE durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 329, 100);        // El zumbador suena en la nota MI durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 261, 100);        // El zumbador suena en la nota DO durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 293, 100);        // El zumbador suena en la nota RE durante 100ms
+  delay(100);                      // Esperamos 100ms
+  tone(zumbador, 329, 100);        // El zumbador suena en la nota MI durante 100ms
+  delay(100);                      // Esperamos 100ms
+  cabeza.write(70);                // Movemos el servo de la cabeza a 70º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(140);               // Movemos el servo de la cabeza a 140º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(70);                // Movemos el servo de la cabeza a 70º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(10);                // Movemos el servo de la cabeza a 10º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(70);                // Movemos el servo de la cabeza a 70º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(10);                // Movemos el servo de la cabeza a 10º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(90);                // Movemos el servo de la cabeza a 90º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(140);               // Movemos el servo de la cabeza a 140º
+  delay(400);                      // Esperamos 400ms
+  cabeza.write(90);                // Movemos el servo de la cabeza a 90º
+}
+
+/***---------------------------------------------------------------------------------------
+                                BUCLE
+  ---------------------------------------------------------------------------------------***/
+
+void loop() {
+
+  // Con esto nuestro ZOWI anda hacia adelante y para cada 300ms
+  DRCH.write(180);                  // Giramos el servo derecho en sentido horario
+  IZQ.write(0);                     // Giramos el servo izquierdo en sentido anti horario
+  delay(300);                      // Esperamos 300ms
+
+  // Ejecutamos las funciones de RASTREAR derecha, izquierda y centro con esperas de 300ms
+  RASTREAR("DERECHA");
+  delay(300);
+  RASTREAR("IZQUIERDA");
+  delay(300);
+  RASTREAR("CENTRO");
+  delay(300);
+}
