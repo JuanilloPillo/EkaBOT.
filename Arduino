@@ -1,0 +1,67 @@
+/*** EkaBOT ESQUIVA OBSTACULOS (mejorando codigo).
+  Programacion realizada por Juan Feligreras para actividad esquiva obstaculos.
+  Funcionamiento: https://www.youtube.com/watch?v=S2ZLy0yqLTg
+  Montaje: https://www.youtube.com/watch?v=Q_5DqbdTE_M
+  Mas info: juanfeligreras85@gmail.com ***/
+
+
+/*** <<<<<<<<<<<<<<<<<<<<<<<<<<<PROGRAMACION PLACA 2>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>***/
+
+
+/***---------------------------------------------------------------------------------------
+                                     LIBRERIAS
+  ---------------------------------------------------------------------------------------***/
+#include <Servo.h>        //Libreria para el servo
+
+
+/***---------------------------------------------------------------------------------------
+                                     COMPONENTES
+  ---------------------------------------------------------------------------------------***/
+// Servos
+Servo ABAJO;                        //Creamos el servo para el movimiento horizontal de la camara
+Servo ARRIBA;                       //Creamos el servo para el movimiento vertical de la camara
+
+int pinServoABAJO = 10;             //Establecemos el pin 10 como salida del servo derecho
+int pinServoARRIBA = 9;             //Establecemos el pin 9 como salida del servo izquierdo
+
+
+void setup() {
+  ABAJO.attach(pinServoABAJO);      //Atribuye el pin al servo ABAJO
+  ARRIBA.attach(pinServoARRIBA);    //Atribuye el pin al servo ARRIBA
+}
+
+/***---------------------------------------------------------------------------------------
+                                BUCLE
+  ---------------------------------------------------------------------------------------***/
+
+// El servo se movera primero hacia los lados y luego de arriba abajo simulando un escaneo total de la zona con esperas de 500ms
+void loop() {
+  ABAJO.write(120);
+  delay(500);
+  ABAJO.write(170);
+  delay(500);
+  ABAJO.write(120);
+  delay(500);
+  ABAJO.write(70);
+  delay(500);
+  ARRIBA.write(150);
+  delay(500);
+  ARRIBA.write(100);
+  delay(500);
+  ARRIBA.write(50);
+  delay(500);
+  ARRIBA.write(100);
+  delay(500);
+  ABAJO.write(120);
+  delay(500);
+  ABAJO.write(170);
+  delay(500);
+  ARRIBA.write(150);
+  delay(500);
+  ARRIBA.write(50);
+  delay(500);
+  ARRIBA.write(100);
+  delay(500);
+  ARRIBA.write(150);
+  delay(500);
+}
